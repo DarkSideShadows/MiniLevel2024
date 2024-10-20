@@ -1,111 +1,104 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using UnityEngine; // for Random.Range
 using System.Linq;
 using System.IO;
+
 public class GameController : MonoBehaviour
 {
-    public List<List<string>> questions;
+    public List<List<string>> dialogueGroup; // list of [question, aiAnswer, humanAnswer, humanAnswer]
+    public List<bool> refugees = new List<bool>(); // human (true) or AI (false)
+    public int numOfRobots, numOfHumans;
 
-    public List<bool> humans = new List<bool>();
-
-    public int numOfRefugees, numOfHumans;
-
+    // Start is called before the first frame update
     void Start()
     {
-        //This is the file reading and parsing
-
-        questions = new List<List<string>>();
-        TextAsset textAsset = Resources.Load<TextAsset>("Questions");
-        if(textAsset != null)
-        {
-            questions = ParseFileContent(textAsset.text);
-        }
-        else
-        {
+        /* Read and load Questions.txt from resources folder.
+         * The question is index 0, AI answer is index 1, and human answers are indices 2 and 3.
+         * so for one group: [question, aiAnswer, humanAnswer, humanAnswer]
+         */
+        dialogueGroup = new List<List<string>>();
+        /* load file at Assets/Resources/Dialogue.txt */
+        TextAsset textAsset = Resources.Load<TextAsset>("Dialogue");
+        if (textAsset == null) {
             Debug.LogError("File not Found!");
+            return; // exit
         }
-        List<string> myStrings = new List<string>();
-        myStrings.Add("Uh Oh!\n");
+        dialogueGroup = ParseFileContent(textAsset.text);
+
         //DisplayParsedContent();
 
-        // The Question is index 0, AI answer is index 1, and human answers are indices 2 and 3
+        /* Initialize humans list */
+        for (int i = 0; i < numOfHumans; i++)
+            refugees.Add(true);
+        for (int i = 0; i < numOfRobots; i++)
+            refugees.Add(false);
+        refugees = ShuffleListWithOrderBy(refugees);
 
-        // Setup bool array
-        for(int i = 0; i < numOfRefugees; i++)
-        {
-            if (i < numOfHumans)
-                humans.Add(true);
-            else
-                humans.Add(false);
-        }
-
-        humans = ShuffleListWithOrderBy(humans);
-
-        Phase();
+        //AskQuestions();
     }
 
-    private void Phase()
+    private void AskQuestions()
     {
-        // Randomly select from an AI or Human
-        bool human = humans[0];
+        int playerQuestionsToAsk = 3;
+        while (playerQuestionsToAsk > 0)
+        {
+            bool isHuman = refugees[0]; // select whether first player is AI or human
 
-        // Select 2 Hypothetical questions from the questions list to offer the player
-        int index = (int)Random.Range(0, questions.Count);
-        List<string> question_1 = questions[index];
-        questions.RemoveAt(index);
-        index = (int)Random.Range(0, questions.Count);
-        List<string> question_2 = questions[index];
-        questions.RemoveAt(index);
+            // TODO, increase this option to two (just make one work for now)
+            /* select one random dialogues from the dialogueGroup list:
+             * dialogueGroup: [question, aiAnswer, humanAnswer, humanAnswer]
+             */
+            int questionIdx = 0;
+            int dialogueSize = dialogueGroup.Count;
+            int dialogueIdx = Random.Range(0, dialogueGroup.Count);
 
-        Debug.Log(question_1[0]);
+            string playerQuestion = dialogueGroup[dialogueIdx][questionIdx];
 
-        // Wait for the player to select one
+            // TODO, implement gameplay loop
+            /* Display the questions to the text box somehow.
+             * Wait for player to select one using keyboard (1, 2, 3)
+             * NPC reacts to playerQuestion (AI or human answer)
+             */
 
-        // Remove the question from the list
-
-        // Respond to the player's question based on AI/Human
-
-        // Counter ++
-
-        // Repeat this loop while counter is less than 3 
+            dialogueGroup.RemoveAt(dialogueIdx); // don't use this dialogue anymore
+            playerQuestionsToAsk--;
+        }
     }
 
+    /* @brief this method takes the content of Dialogue.txt
+     *        and splits it into groups of four options:
+     *        [question, aiAnswer, humanAnswer, humanAnswer]
+     *        and adds it to a list
+     */
     private List<List<string>> ParseFileContent(string fileContent)
     {
         List<List<string>> parsedData = new List<List<string>>();
-
-        // Split the entire file content into lines
-        string[] lines = fileContent.Split('\n');
-        List<string> currentGroup = new List<string>();
-
+        string[] lines = fileContent.Split('\n'); // split the file content into lines
 
         foreach (string line in lines)
         {
+            List<string> currentGroup = new List<string>();
+
             // Trim whitespace and check if the line is non-empty
             if (!string.IsNullOrEmpty(line))
-            {
                 currentGroup.Add(line);
-            }
 
             // Once we have 4 elements in the current group, add it to the list and start a new group
             if (currentGroup.Count == 4)
             {
-                parsedData.Add(new List<string>(currentGroup)); // Create a new list to avoid reference issues
-                currentGroup.Clear();
+                parsedData.Add(currentGroup); // add dialogueGroup
+                currentGroup.Clear(); // remove all elements, reuse same list for next group
             }
         }
-
-        // If there are leftover items in the current group (less than 4), they will be ignored
-        // If you want to keep them, you can check and add them manually here.
 
         return parsedData;
     }
 
-    // Debug or display the parsed content
+    // Display the parsed content to console
     public void DisplayParsedContent()
     {
-        foreach (List<string> group in questions)
+        foreach (List<string> group in dialogueGroup)
         {
             Debug.Log("New Group:");
             foreach (string element in group)
@@ -118,9 +111,9 @@ public class GameController : MonoBehaviour
     void OnGUI()
     {
         // Optionally display the parsed content in the Unity UI for debugging
-        if (questions != null)
+        if (dialogueGroup != null)
         {
-            foreach (List<string> group in questions)
+            foreach (List<string> group in dialogueGroup)
             {
                 GUILayout.Label("New Group:");
                 foreach (string element in group)

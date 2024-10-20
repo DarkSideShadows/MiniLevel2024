@@ -340,8 +340,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 565494379}
-        m_TargetAssemblyTypeName: Directions, Assembly-CSharp
-        m_MethodName: Back
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: GoToMainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -473,8 +473,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 565494379}
-        m_TargetAssemblyTypeName: Directions, Assembly-CSharp
-        m_MethodName: Continue
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: GoToDirectionsScreen
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -797,7 +797,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 565494377}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4dd17937e006834fab9860cc6847d90, type: 3}
+  m_Script: {fileID: 11500000, guid: 170b659408ba46540ab1cd4d7450a948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &683705552
@@ -894,8 +894,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 565494378}
   - {fileID: 401781332}
+  - {fileID: 565494378}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

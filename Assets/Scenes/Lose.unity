@@ -206,8 +206,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 361720514}
-        m_TargetAssemblyTypeName: Lose, Assembly-CSharp
-        m_MethodName: PlayGameAgain
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: PlayAgain
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -370,7 +370,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 361720512}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a38f5ee22cd49944a39b564a0545f44, type: 3}
+  m_Script: {fileID: 11500000, guid: 170b659408ba46540ab1cd4d7450a948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &395850223
@@ -573,7 +573,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 361720514}
-        m_TargetAssemblyTypeName: Lose, Assembly-CSharp
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: QuitGame
         m_Mode: 1
         m_Arguments:
