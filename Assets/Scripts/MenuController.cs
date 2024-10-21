@@ -17,7 +17,7 @@ public class MenuController : MonoBehaviour
 
     public void GoToStoryScreen()
     {
-        SceneManager.LoadScene("Story");
+        SceneManager.LoadScene("StoryBackground");
     }
 
     public void GoToMainLevel()

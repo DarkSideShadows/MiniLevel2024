@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 71f7d2c671e819640b03d03fd6dd1335
   - enabled: 1
-    path: Assets/Scenes/Story.unity
+    path: Assets/Scenes/StoryBackground.unity
     guid: a364a8956be3ecf47be296d8774a6a8c
   - enabled: 1
     path: Assets/Scenes/Directions.unity
@@ -18,9 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MainLevel.unity
     guid: b02a1563541393c43b585961cd3314e9
   - enabled: 1
-    path: Assets/Scenes/Win.unity
+    path: Assets/Scenes/WinScreen.unity
     guid: 252c4b08e545e4541ab36acd553879c6
   - enabled: 1
-    path: Assets/Scenes/Lose.unity
+    path: Assets/Scenes/LoseScreen.unity
     guid: 5468d3fc127c4af49a051638728a3b0c
   m_configObjects: {}

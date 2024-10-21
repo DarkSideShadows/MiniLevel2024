@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine; // for Random.Range
 using System.Linq;
 using System.IO;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
@@ -26,6 +27,7 @@ public class GameController : MonoBehaviour
         }
         dialogueGroup = ParseFileContent(textAsset.text);
 
+        // For debugging, display contents in Unity console
         //DisplayParsedContent();
 
         /* Initialize humans list */
@@ -35,12 +37,12 @@ public class GameController : MonoBehaviour
             refugees.Add(false);
         refugees = ShuffleListWithOrderBy(refugees);
 
-        //AskQuestions();
+        AskQuestion();
     }
 
-    private void AskQuestions()
+    private void AskQuestion()
     {
-        int playerQuestionsToAsk = 3;
+        int playerQuestionsToAsk = 1;
         while (playerQuestionsToAsk > 0)
         {
             bool isHuman = refugees[0]; // select whether first player is AI or human
@@ -51,7 +53,7 @@ public class GameController : MonoBehaviour
              */
             int questionIdx = 0;
             int dialogueSize = dialogueGroup.Count;
-            int dialogueIdx = Random.Range(0, dialogueGroup.Count);
+            int dialogueIdx = Random.Range(0, dialogueSize);
 
             string playerQuestion = dialogueGroup[dialogueIdx][questionIdx];
 
@@ -60,8 +62,17 @@ public class GameController : MonoBehaviour
              * Wait for player to select one using keyboard (1, 2, 3)
              * NPC reacts to playerQuestion (AI or human answer)
              */
+            Debug.Log(playerQuestion);
 
-            dialogueGroup.RemoveAt(dialogueIdx); // don't use this dialogue anymore
+            /* FindObjectOfType method looks through all GameObjects in "MainLevel" scene */
+            // find GameObject with TextController component script (it is TextManager)
+            TextController textController = FindObjectOfType<TextController>();
+
+            /* 1. display question options */
+            textController.DisplayQuestion(playerQuestion);
+            /* 2. wait for player to choose question */
+
+            dialogueGroup.RemoveAt(dialogueIdx); // don't reuse dialogue
             playerQuestionsToAsk--;
         }
     }
@@ -74,12 +85,11 @@ public class GameController : MonoBehaviour
     private List<List<string>> ParseFileContent(string fileContent)
     {
         List<List<string>> parsedData = new List<List<string>>();
-        string[] lines = fileContent.Split('\n'); // split the file content into lines
+        List<string> currentGroup = new List<string>();
+        string[] lines = fileContent.Split('\n'); // split file content into lines
 
         foreach (string line in lines)
         {
-            List<string> currentGroup = new List<string>();
-
             // Trim whitespace and check if the line is non-empty
             if (!string.IsNullOrEmpty(line))
                 currentGroup.Add(line);
@@ -87,7 +97,8 @@ public class GameController : MonoBehaviour
             // Once we have 4 elements in the current group, add it to the list and start a new group
             if (currentGroup.Count == 4)
             {
-                parsedData.Add(currentGroup); // add dialogueGroup
+                /* Create a new list and pass that reference to parsedData */
+                parsedData.Add(new List<string>(currentGroup)); // add a copy of the current group
                 currentGroup.Clear(); // remove all elements, reuse same list for next group
             }
         }
@@ -102,25 +113,7 @@ public class GameController : MonoBehaviour
         {
             Debug.Log("New Group:");
             foreach (string element in group)
-            {
                 Debug.Log(element);
-            }
-        }
-    }
-
-    void OnGUI()
-    {
-        // Optionally display the parsed content in the Unity UI for debugging
-        if (dialogueGroup != null)
-        {
-            foreach (List<string> group in dialogueGroup)
-            {
-                GUILayout.Label("New Group:");
-                foreach (string element in group)
-                {
-                    GUILayout.Label(element);
-                }
-            }
         }
     }
 
