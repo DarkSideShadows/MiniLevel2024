@@ -5,11 +5,33 @@ using System.Linq;
 using System.IO;
 using UnityEngine.UI;
 
+using TMPro;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
+using UnityEngine.UIElements;
+using Unity.VisualScripting;
+
 public class GameController : MonoBehaviour
 {
     public List<List<string>> dialogueGroup; // list of [question, aiAnswer, humanAnswer, humanAnswer]
     public List<bool> refugees = new List<bool>(); // human (true) or AI (false)
     public int numOfRobots, numOfHumans;
+
+    public TMP_Text optionA, optionB, responseBubble, responseText, questionBubble, questionText;
+
+    public UnityEngine.UI.Button buttonA, buttonB, admit, deny;
+
+    private int counter = 0;  // To track the number of questions asked
+    private bool human;
+
+    private List<string> question_1, question_2;  // To store the selected questions
+    private bool optionSelected = false;
+    private bool decisionMade = false;
+    private int selectedOption = 0;
+    private bool decision = false;
+    private int robotsAdmitted = 0;
+    private int humansDenied = 0;
+
+    private bool gameOver = false;
 
     // Start is called before the first frame update
     void Start()
@@ -37,44 +59,221 @@ public class GameController : MonoBehaviour
             refugees.Add(false);
         refugees = ShuffleListWithOrderBy(refugees);
 
-        AskQuestion();
+        // Add listeners to buttons
+        buttonA.onClick.AddListener(() => OnOptionSelected(1));  // 1 for option A
+        buttonB.onClick.AddListener(() => OnOptionSelected(2));  // 2 for option B
+
+        StartCoroutine(GameplayLoop());
+
+        //AskQuestion();
     }
 
-    private void AskQuestion()
+    //private void AskQuestion()
+    //{
+    //    int playerQuestionsToAsk = 1;
+    //    while (playerQuestionsToAsk > 0)
+    //    {
+    //        bool isHuman = refugees[0]; // select whether first player is AI or human
+
+    //        // TODO, increase this option to two (just make one work for now)
+    //        /* select one random dialogues from the dialogueGroup list:
+    //         * dialogueGroup: [question, aiAnswer, humanAnswer, humanAnswer]
+    //         */
+    //        int questionIdx = 0;
+    //        int dialogueSize = dialogueGroup.Count;
+    //        int dialogueIdx = Random.Range(0, dialogueSize);
+
+    //        string playerQuestion = dialogueGroup[dialogueIdx][questionIdx];
+
+    //        // TODO, implement gameplay loop
+    //        /* Display the questions to the text box somehow.
+    //         * Wait for player to select one using keyboard (1, 2, 3)
+    //         * NPC reacts to playerQuestion (AI or human answer)
+    //         */
+    //        Debug.Log(playerQuestion);
+
+    //        /* FindObjectOfType method looks through all GameObjects in "MainLevel" scene */
+    //        // find GameObject with TextController component script (it is TextManager)
+    //        TextController textController = FindObjectOfType<TextController>();
+
+    //        /* 1. display question options */
+    //        textController.DisplayQuestion(playerQuestion);
+    //        /* 2. wait for player to choose question */
+
+    //        dialogueGroup.RemoveAt(dialogueIdx); // don't reuse dialogue
+    //        playerQuestionsToAsk--;
+    //    }
+    //}
+
+    private IEnumerator GameplayLoop()
     {
-        int playerQuestionsToAsk = 1;
-        while (playerQuestionsToAsk > 0)
-        {
-            bool isHuman = refugees[0]; // select whether first player is AI or human
 
-            // TODO, increase this option to two (just make one work for now)
-            /* select one random dialogues from the dialogueGroup list:
-             * dialogueGroup: [question, aiAnswer, humanAnswer, humanAnswer]
-             */
-            int questionIdx = 0;
-            int dialogueSize = dialogueGroup.Count;
-            int dialogueIdx = Random.Range(0, dialogueSize);
+        // Continue looping through phases until the humans list is empty
+        while (refugees.Count > 0)
+        {    
+            optionSelected = false;
+            decisionMade = false;
+            selectedOption = 0;
+            decision = false;
 
-            string playerQuestion = dialogueGroup[dialogueIdx][questionIdx];
-
-            // TODO, implement gameplay loop
-            /* Display the questions to the text box somehow.
-             * Wait for player to select one using keyboard (1, 2, 3)
-             * NPC reacts to playerQuestion (AI or human answer)
-             */
-            Debug.Log(playerQuestion);
-
-            /* FindObjectOfType method looks through all GameObjects in "MainLevel" scene */
-            // find GameObject with TextController component script (it is TextManager)
-            TextController textController = FindObjectOfType<TextController>();
-
-            /* 1. display question options */
-            textController.DisplayQuestion(playerQuestion);
-            /* 2. wait for player to choose question */
-
-            dialogueGroup.RemoveAt(dialogueIdx); // don't reuse dialogue
-            playerQuestionsToAsk--;
+            // Call the Phase coroutine and wait for it to finish
+            yield return StartCoroutine(Phase());
+            
         }
+
+        // After the loop, perform any actions when the game is over
+        gameOver = true;
+
+        if(robotsAdmitted > 0)
+        {
+            // TODO: Handle Scene changes 
+            Debug.Log("The AI infiltrated your city and took over!");
+        } else
+        {
+            // TODO: Handle Scene changes 
+            if (humansDenied > 0)
+            {
+                Debug.Log("The AI failed to infiltrated your city, but at least one innocent human lost their life at your hands!");
+            } else
+            {
+                Debug.Log("The AI failed to infiltrated your city, and no innocent humans lost their lives at your hands!");
+            }
+        }
+    }
+    private IEnumerator Phase()
+    {
+        counter = 0;
+     
+        // TODO: Animation of the character walking up
+
+        while (counter < 3)
+        {
+            human = refugees[0];
+
+            // Select 2 hypothetical questions from the questions list
+            int index = Random.Range(0, dialogueGroup.Count);
+            question_1 = dialogueGroup[index];
+            dialogueGroup.RemoveAt(index);
+
+            index = Random.Range(0, dialogueGroup.Count);
+            question_2 = dialogueGroup[index];
+            dialogueGroup.RemoveAt(index);
+
+            optionA.SetText(question_1[0]);
+            optionB.SetText(question_2[0]);
+
+            // Reset selection flags
+            optionSelected = false;
+            selectedOption = 0;
+
+            // Wait until the player selects an option (either button A or B)
+            yield return new WaitUntil(() => optionSelected);
+
+            responseBubble.gameObject.SetActive(true);
+            questionBubble.gameObject.SetActive(true);
+
+            // Respond to the player's selection
+            if (human)
+            {
+                int rand = (int)Random.Range(2,4);
+                // If it's a human, respond with a human answer
+                if (selectedOption == 1)
+                {
+                    responseBubble.text = question_1[rand];
+                    responseText.text = question_1[rand];
+                    questionBubble.text = question_1[0];
+                    questionText.text = question_1[0];
+                    Debug.Log("Human Answer: " + question_1[rand]);
+                }
+                else
+                {
+                    responseBubble.text = question_2[rand];
+                    responseText.text = question_2[rand];
+                    questionBubble.text = question_2[0];
+                    questionText.text = question_2[0];
+                    Debug.Log("Human Answer: " + question_2[rand]);
+                }
+            }
+            else
+            {
+                // If it's AI, respond with the AI answer
+                if (selectedOption == 1)
+                {
+                    responseBubble.text = question_1[1];
+                    responseText.text = question_1[1];
+                    questionBubble.text = question_1[0];
+                    questionText.text = question_1[0];
+                    Debug.Log("AI Answer: " + question_1[1]);
+                }
+                else
+                {
+                    responseBubble.text = question_2[1];
+                    responseText.text = question_2[1];
+                    questionBubble.text = question_2[0];
+                    questionText.text = question_2[0];
+                    Debug.Log("AI Answer: " + question_2[1]);
+                }
+            }
+
+            counter++;  // Increment counter
+        }
+        // Remove Options Text
+
+        optionA.SetText("");
+        optionB.SetText("");
+
+        // Allow a decision
+        admit.onClick.AddListener(() => OnDecision(true)); // True for the Admit Button
+        deny.onClick.AddListener(() => OnDecision(false)); // False for the Deny Button
+
+        // Wait until the player selects an option (either admit or deny)
+        yield return new WaitUntil(() => decisionMade);
+
+        // Disable decisions
+        admit.onClick.RemoveAllListeners(); // True for the Admit Button
+        deny.onClick.RemoveAllListeners(); // False for the Deny Button
+
+        // Adjust game state based on decision outcome
+        if (refugees[0])
+        {
+            if(!decision)
+            {
+                humansDenied++;
+                Debug.Log("You killed a human.");
+            }
+        } else
+        {
+            if(decision)
+            {
+                robotsAdmitted++;
+                Debug.Log("You let in a robot.");
+            }
+        }
+
+        // Clear Text Bubbles
+        responseBubble.gameObject.SetActive(false);
+        questionBubble.gameObject.SetActive(false);
+
+        // Remove the last interview from the list
+        refugees.RemoveAt(0);
+
+        // TODO: Animation of the character's fate
+            // Use decision == false for denied, decision == true for admitted
+
+        Debug.Log("End of Phase.");
+    }
+
+    private void OnOptionSelected(int option)
+    {
+        // Player selected an option
+        optionSelected = true;
+        selectedOption = option;  // Store the selected option
+    }
+
+    private void OnDecision(bool admit)
+    {
+        decision = admit;
+        decisionMade = true;
     }
 
     /* @brief this method takes the content of Dialogue.txt
